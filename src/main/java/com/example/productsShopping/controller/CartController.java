@@ -46,4 +46,49 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<?> removeFromCart(
+            Principal principal,
+            @PathVariable long productId
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        cartService.removeFromCart(principal.getName(), productId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{productId}")
+    public ResponseEntity<?> updateCartItemQuantity(
+            Principal principal,
+            @PathVariable long productId,
+            @RequestParam Integer quantity
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        CartItemDto updatedItem = cartService.updateCartItemQuantity(
+                principal.getName(), productId, quantity
+        );
+
+        return updatedItem != null
+                ? ResponseEntity.ok(updatedItem)
+                : ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/clear")
+    public ResponseEntity<Void> clearCart(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            cartService.clearCart(principal.getName());
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }
